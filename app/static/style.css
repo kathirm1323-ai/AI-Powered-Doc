@@ -1201,6 +1201,155 @@ body {
 }
 
 /* ============================================
+   Landing Page Sections
+   ============================================ */
+.landing-content {
+    margin-top: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 80px;
+    animation: fadeInUp 0.8s var(--ease-out) 0.3s both;
+}
+
+.section-heading {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.section-heading h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+    background: var(--accent-gradient-2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.section-heading p {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+}
+
+/* Features */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+}
+
+.feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 32px 24px;
+    text-align: center;
+    backdrop-filter: blur(12px);
+    transition: all 0.4s var(--ease-out);
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent-gradient);
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--border-accent);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(124, 58, 237, 0.1);
+}
+
+.feature-card:hover::before {
+    opacity: 1;
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    display: inline-block;
+}
+
+.feature-card h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+.feature-card p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* How It Works */
+.steps-container {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.landing-step-box {
+    flex: 1;
+    min-width: 200px;
+    text-align: center;
+    padding: 24px;
+    background: rgba(124, 58, 237, 0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    transition: all 0.3s var(--ease-out);
+}
+
+.landing-step-box:hover {
+    background: rgba(124, 58, 237, 0.06);
+    border-color: rgba(124, 58, 237, 0.2);
+    transform: translateY(-2px);
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    background: var(--accent-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: white;
+    margin: 0 auto 16px;
+    box-shadow: 0 0 16px rgba(124, 58, 237, 0.4);
+}
+
+.landing-step-box h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.landing-step-box p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.step-line {
+    flex-grow: 1;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(124, 58, 237, 0.1), rgba(124, 58, 237, 0.4), rgba(124, 58, 237, 0.1));
+    margin-top: 44px;
+    min-width: 40px;
+}
+
+/* ============================================
    Animations
    ============================================ */
 @keyframes fadeInUp {
