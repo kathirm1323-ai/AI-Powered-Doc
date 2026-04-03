@@ -30,12 +30,6 @@
     const retryBtn            = $("#retry-btn");
     const newAnalysisBtn      = $("#new-analysis-btn");
 
-    // Processing steps
-    const stepExtract  = $("#step-extract");
-    const stepAnalyze  = $("#step-analyze");
-    const stepEntities = $("#step-entities");
-    const stepComplete = $("#step-complete");
-
     // Stats
     const statWords     = $("#stat-words");
     const statChars     = $("#stat-chars");
@@ -144,25 +138,21 @@
     // ── Processing Animation ───────────────────────────────────
     async function animateProcessing() {
         const steps = [
-            { el: stepExtract, msg: "Extracting text content...", progress: 20 },
-            { el: stepAnalyze, msg: "Running AI analysis...", progress: 55 },
-            { el: stepEntities, msg: "Identifying named entities...", progress: 80 },
+            { msg: "> Initiating extraction protocols...", progress: 20 },
+            { msg: "> Decrypting semantic structure...", progress: 45 },
+            { msg: "> Mapping named entities...", progress: 75 },
+            { msg: "> Finalizing algorithmic analysis...", progress: 90 },
         ];
 
         for (const step of steps) {
-            step.el.classList.add("active");
             processingStatus.textContent = step.msg;
             progressFill.style.width = step.progress + "%";
-            await sleep(800);
-            step.el.classList.remove("active");
-            step.el.classList.add("done");
+            await sleep(700);
         }
     }
 
     function resetProcessingSteps() {
-        [stepExtract, stepAnalyze, stepEntities, stepComplete].forEach((s) => {
-            s.classList.remove("active", "done");
-        });
+        processingStatus.textContent = "> Ready.";
         progressFill.style.width = "0%";
     }
 
@@ -269,9 +259,8 @@
             const data = await response.json();
 
             // Complete step
-            stepComplete.classList.add("done");
             progressFill.style.width = "100%";
-            processingStatus.textContent = "Analysis complete!";
+            processingStatus.textContent = "> Analysis complete.";
             await sleep(600);
 
             renderResults(data);

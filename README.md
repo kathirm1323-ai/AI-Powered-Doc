@@ -9,14 +9,21 @@ DocMind AI is a professional-grade, single-page AI document analysis platform. I
 - **Entity Extraction:** Automatically identifies and categorizes persons, organizations, locations, dates, and monetary amounts.
 - **Sentiment Analysis:** Determines overall tone (positive, negative, neutral) with context.
 
-## 🎨 Premium Cinematic UI
+## 🚀 Live Demo
 
-The frontend has been completely overhauled from scratch without the use of heavy frameworks, relying strictly on **Vanilla HTML, CSS, and JS**:
+You can view the live deployment of this application (if hosted on Render) here:
+👉 **[https://ai-powered-doc.onrender.com](https://ai-powered-doc.onrender.com)**
 
-- **Glassmorphism & Gradients:** A sleek, dark-themed UI featuring floating pill navbars, animated gradient text, and dynamic custom shadow properties.
-- **Cinematic Backgrounds:** Animated drifting glow orbs overlaying a glowing grid pattern.
-- **Dynamic Micro-Interactions:** Smooth hover states, glowing borders, pulsing status indicators, and spinning neural rings during the analysis phase.
-- **Fully Responsive:** Adapts seamlessly to all screen sizes, from mobile to desktop.
+*(Note: If deploying to a different Render service name, replace the URL above).*
+
+## 🎨 $100,000 Ultra-Premium UI
+
+The frontend has been completely redesigned from scratch to meet elite Enterprise SaaS aesthetic standards (inspired by Apple, Stripe, and Vercel) relying strictly on **Vanilla HTML, CSS, and JS**:
+
+- **Glassmorphism 2.0:** High-blur frosted glass panels with precise 1px specular lighting borders.
+- **Deep Space Palette:** Ultra-dark monochromatic zinc/slate palette `#09090b` for minimal distraction.
+- **Aurora Mesh Backgrounds:** Sophisticated slow-moving volumetric light orbs masked behind cinematic film grain noise.
+- **Bento Box Grids:** Results are structured into a modern dashboard layout making data extraction instantly readable.
 
 ## Tech Stack
 
