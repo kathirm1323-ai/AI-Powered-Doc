@@ -341,21 +341,20 @@
 
     // ── Three.js 3D Engine ─────────────────────────────────────
     const canvas = document.getElementById('three-canvas');
-    if (canvas && typeof THREE !== 'undefined' && canvasCard) {
+    if (canvas && typeof THREE !== 'undefined') {
         const scene = new THREE.Scene();
-        let width = canvasCard.clientWidth;
-        let height = canvasCard.clientHeight;
+        let width = window.innerWidth;
+        let height = window.innerHeight;
         
         const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-        camera.position.z = 4.5;
-        // Shift camera left so model renders on the right side of the box
-        camera.position.x = -1.5;
+        camera.position.z = 6;
 
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
         renderer.setSize(width, height);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        const geometry = new THREE.TorusKnotGeometry(2, 0.5, 128, 32);
+        // Use Octahedron for a geometric "Diamond" shape
+        const geometry = new THREE.OctahedronGeometry(4, 0);
         const material = new THREE.MeshBasicMaterial({ 
             color: 0xc9a84c, wireframe: true, transparent: true, opacity: 0.15 
         });
@@ -365,10 +364,9 @@
         let mouseX = 0; let mouseY = 0;
         let targetRotationX = 0; let targetRotationY = 0;
 
-        canvasCard.addEventListener('mousemove', (event) => {
-            const rect = canvasCard.getBoundingClientRect();
-            mouseX = ((event.clientX - rect.left) - (width/2)) * 0.002;
-            mouseY = ((event.clientY - rect.top) - (height/2)) * 0.002;
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX - (width/2)) * 0.001;
+            mouseY = (event.clientY - (height/2)) * 0.001;
         });
 
         let baseRotationSpeed = 0.0015;
@@ -381,14 +379,13 @@
         }
         animate3D();
 
-        const resizeObserver = new ResizeObserver(() => {
-            width = canvasCard.clientWidth;
-            height = canvasCard.clientHeight;
+        window.addEventListener('resize', () => {
+            width = window.innerWidth;
+            height = window.innerHeight;
             camera.aspect = width / height;
             camera.updateProjectionMatrix();
             renderer.setSize(width, height);
         });
-        resizeObserver.observe(canvasCard);
 
         window.setDragPhysics = function(isDragging) {
             if(isDragging) { material.opacity = 0.5; baseRotationSpeed = 0.04; }
