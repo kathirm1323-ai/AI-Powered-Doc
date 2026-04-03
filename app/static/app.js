@@ -355,7 +355,7 @@
         renderer.setSize(width, height);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        const geometry = new THREE.IcosahedronGeometry(3.5, 1);
+        const geometry = new THREE.TorusKnotGeometry(2, 0.5, 128, 32);
         const material = new THREE.MeshBasicMaterial({ 
             color: 0xc9a84c, wireframe: true, transparent: true, opacity: 0.15 
         });
