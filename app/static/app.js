@@ -220,49 +220,50 @@
 
         entitiesGrid.innerHTML = "";
         let pillIndex = 0;
+        let totalEntitiesFound = 0;
 
         for (const [key, label] of Object.entries(map)) {
             const items = entities[key] || [];
             
-            const row = document.createElement("div");
-            row.className = "entity-row";
-            
-            const type = document.createElement("span");
-            type.className = "ent-type";
-            type.textContent = label;
-            
-            const line = document.createElement("div");
-            line.className = "ent-line";
-            
-            const list = document.createElement("div");
-            list.className = "ent-list";
-
             if (items.length > 0) {
+                totalEntitiesFound += items.length;
+                
+                const row = document.createElement("div");
+                row.className = "entity-row";
+                
+                const type = document.createElement("span");
+                type.className = "ent-type";
+                type.textContent = label;
+                
+                const line = document.createElement("div");
+                line.className = "ent-line";
+                
+                const list = document.createElement("div");
+                list.className = "ent-list";
+
                 items.forEach((item) => {
                     const tag = document.createElement("span");
                     tag.className = "ent-pill";
                     tag.textContent = item;
                     list.appendChild(tag);
                     
-                    // Stagger animation
-                    setTimeout(() => {
-                        tag.classList.add("visible");
-                    }, ~~(800 + (pillIndex * 50)));
+                    setTimeout(() => { tag.classList.add("visible"); }, ~~(800 + (pillIndex * 50)));
                     pillIndex++;
                 });
-            } else {
-                const empty = document.createElement("span");
-                empty.className = "ent-pill visible";
-                empty.style.color = "var(--ghost)";
-                empty.style.borderColor = "transparent";
-                empty.textContent = "—";
-                list.appendChild(empty);
-            }
 
-            row.appendChild(type);
-            row.appendChild(line);
-            row.appendChild(list);
-            entitiesGrid.appendChild(row);
+                row.appendChild(type);
+                row.appendChild(line);
+                row.appendChild(list);
+                entitiesGrid.appendChild(row);
+            }
+        }
+        
+        const entitiesContainer = document.querySelector('.entities-block');
+        if (totalEntitiesFound === 0) {
+            entitiesContainer.style.display = 'none';
+        } else {
+            entitiesContainer.style.display = 'flex';
+            entitiesContainer.style.flexDirection = 'column';
         }
     }
 
