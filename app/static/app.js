@@ -284,7 +284,13 @@
             await animationPromise;
 
             if (!response.ok) {
-                throw new Error("API Exception");
+                const errorData = await response.json().catch(() => ({}));
+                const detail = errorData.detail;
+                let msg = "API Exception";
+                if (detail) {
+                    msg = typeof detail === "object" ? detail.message || JSON.stringify(detail) : String(detail);
+                }
+                throw new Error(msg);
             }
 
             const data = await response.json();
