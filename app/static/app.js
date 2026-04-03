@@ -353,13 +353,35 @@
         renderer.setSize(width, height);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        // Use Octahedron for a geometric "Diamond" shape
-        const geometry = new THREE.OctahedronGeometry(4, 0);
-        const material = new THREE.MeshBasicMaterial({ 
+        // Advanced Data Core Group
+        const coreGroup = new THREE.Group();
+        
+        const wireMaterial = new THREE.MeshBasicMaterial({ 
             color: 0xc9a84c, wireframe: true, transparent: true, opacity: 0.15 
         });
-        const mesh = new THREE.Mesh(geometry, material);
-        scene.add(mesh);
+
+        // 1. Outer Diamond Shell
+        const shellGeom = new THREE.OctahedronGeometry(4.5, 0);
+        const shell = new THREE.Mesh(shellGeom, wireMaterial);
+        coreGroup.add(shell);
+
+        // 2. Inner Complex Core
+        const innerGeom = new THREE.IcosahedronGeometry(2.5, 2);
+        const innerCore = new THREE.Mesh(innerGeom, wireMaterial);
+        coreGroup.add(innerCore);
+
+        // 3. Orbiting Data Rings
+        const ringGeom1 = new THREE.TorusGeometry(5.5, 0.02, 16, 100);
+        const ring1 = new THREE.Mesh(ringGeom1, wireMaterial);
+        ring1.rotation.x = Math.PI / 2;
+        coreGroup.add(ring1);
+
+        const ringGeom2 = new THREE.TorusGeometry(6.5, 0.02, 16, 100);
+        const ring2 = new THREE.Mesh(ringGeom2, wireMaterial);
+        ring2.rotation.y = Math.PI / 3;
+        coreGroup.add(ring2);
+
+        scene.add(coreGroup);
 
         let mouseX = 0; let mouseY = 0;
         let targetRotationX = 0; let targetRotationY = 0;
@@ -373,8 +395,17 @@
         function animate3D() {
             requestAnimationFrame(animate3D);
             targetRotationX = mouseY * 0.5; targetRotationY = mouseX * 0.5;
-            mesh.rotation.y += baseRotationSpeed + (targetRotationY - mesh.rotation.y) * 0.05;
-            mesh.rotation.x += baseRotationSpeed + (targetRotationX - mesh.rotation.x) * 0.05;
+            
+            // Spin entire group
+            coreGroup.rotation.y += baseRotationSpeed + (targetRotationY - coreGroup.rotation.y) * 0.05;
+            coreGroup.rotation.x += baseRotationSpeed + (targetRotationX - coreGroup.rotation.x) * 0.05;
+            
+            // Spin individual elements for advanced complexity
+            innerCore.rotation.y -= 0.003;
+            innerCore.rotation.x -= 0.002;
+            ring1.rotation.y += 0.004;
+            ring2.rotation.x -= 0.005;
+
             renderer.render(scene, camera);
         }
         animate3D();
@@ -388,8 +419,8 @@
         });
 
         window.setDragPhysics = function(isDragging) {
-            if(isDragging) { material.opacity = 0.5; baseRotationSpeed = 0.04; }
-            else { material.opacity = 0.15; baseRotationSpeed = 0.0015; }
+            if(isDragging) { wireMaterial.opacity = 0.5; baseRotationSpeed = 0.04; }
+            else { wireMaterial.opacity = 0.15; baseRotationSpeed = 0.0015; }
         };
     }
 
