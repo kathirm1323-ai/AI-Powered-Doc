@@ -87,10 +87,61 @@
             <div class="results-layout">
                 <!-- Left Column -->
                 <div class="col-left">
-                    <div class="results-block summary-block">
-                        <h3 class="category-header">SUMMARY</h3>
-                        <p class="summary-text" id="result-summary"></p>
+                    <div class="summary-block p-4 border" id="summary-container" style="grid-column: span 1; position: relative;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <div class="section-title" style="margin:0; display:flex; align-items:center;">
+                            SUMMARY 
+                            <button id="col-toggle" class="ghost-btn" style="margin-left: 16px;">[ ↑ COLLAPSE ]</button>
+                        </div>
+                        <button id="copy-summary-btn" class="ghost-btn">[ COPY ]</button>
                     </div>
+                    
+                    <div id="summary-content-wrapper" style="overflow: hidden; transition: max-height 0.3s ease;">
+                        <div class="summary-tabs">
+                            <button class="sum-tab active" data-tab="brief">[ BRIEF ]</button>
+                            <button class="sum-tab" data-tab="detailed">[ DETAILED ]</button>
+                            <button class="sum-tab" data-tab="bullets">[ BULLETS ]</button>
+                        </div>
+
+                        <div class="metrics-bar" id="metrics-bar">
+                            <div class="metric-item">
+                                <div class="metric-label">TOPIC</div>
+                                <div class="metric-val" id="meta-topic">—</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">READING TIME</div>
+                                <div class="metric-val" id="meta-read">—</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">COMPLEXITY</div>
+                                <div class="metric-val" id="meta-complexity">—</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">LANGUAGE</div>
+                                <div class="metric-val" id="meta-lang">—</div>
+                            </div>
+                            <div class="metric-item" style="border-right: none;">
+                                <div class="metric-label">READABILITY</div>
+                                <div class="metric-val" id="meta-readability">—</div>
+                            </div>
+                        </div>
+
+                        <div style="position: relative; margin-top: 24px;" id="summary-text-box">
+                            <div class="confidence-indicator" id="confidence-bar">AI CONFIDENCE <span class="conf-dots"></span> <span class="conf-label"></span></div>
+                            <div class="summary-text" id="summary-text" style="transition: opacity 0.2s ease;"></div>
+                        </div>
+
+                        <div class="keywords-block" id="keywords-container" style="margin-top: 32px;">
+                            <div class="metric-label">KEY TERMS <span style="color:var(--border);">────────────────────────────────</span></div>
+                            <div class="keyword-grid" id="keyword-grid"></div>
+                        </div>
+
+                        <div class="timeline-block" id="timeline-container" style="margin-top: 32px; display: none;">
+                            <div class="metric-label">TIMELINE <span style="color:var(--border);">─────────────────────────────────</span></div>
+                            <div class="timeline-track" id="timeline-track"></div>
+                        </div>
+                    </div>
+                </div>
 
                     <div class="results-block entities-block">
                         <h3 class="category-header">ENTITIES DETECTED</h3>

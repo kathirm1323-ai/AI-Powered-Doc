@@ -154,6 +154,8 @@ async def analyze(file: UploadFile = File(...)):
     # Build response
     response = {
         "summary": analysis["summary"],
+        "document_meta": analysis["document_meta"],
+        "keywords": analysis["keywords"],
         "entities": analysis["entities"],
         "sentiment": analysis["sentiment"],
         "sentiment_explanation": analysis["sentiment_explanation"],

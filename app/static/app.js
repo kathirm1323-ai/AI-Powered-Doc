@@ -40,7 +40,23 @@
     const statWords  = $("#stat-words");
     const statChars  = $("#stat-chars");
     const statFormat = $("#stat-format");
-    const statTime   = $("#stat-time");
+    // Summary Panel Elements
+    const summaryContainer = $("#summary-container");
+    const summaryText = $("#summary-text");
+    const metaTopic = $("#meta-topic");
+    const metaRead = $("#meta-read");
+    const metaComp = $("#meta-complexity");
+    const metaLang = $("#meta-lang");
+    const metaReadability = $("#meta-readability");
+    const confDots = document.querySelector(".conf-dots");
+    const confLabel = document.querySelector(".conf-label");
+    const keywordGrid = $("#keyword-grid");
+    const timelineContainer = $("#timeline-container");
+    const timelineTrack = $("#timeline-track");
+    const copySummaryBtn = $("#copy-summary-btn");
+    const colToggle = $("#col-toggle");
+    const summaryContentWrapper = $("#summary-content-wrapper");
+    const sumTabs = document.querySelectorAll(".sum-tab");
 
     const newBtn  = $("#new-btn");
 
@@ -267,6 +283,126 @@
         }
     }
 
+    // Generate Intelligence Summary Panel
+    let activeSummaryTab = "brief";
+    let currentSummaryData = null;
+
+    function renderSummaryText() {
+        if(!currentSummaryData) return;
+        summaryText.style.opacity = 0;
+        
+        setTimeout(() => {
+            if (activeSummaryTab === "brief") {
+                summaryText.style.fontSize = "18px";
+                summaryText.innerHTML = currentSummaryData.brief;
+            } else if (activeSummaryTab === "detailed") {
+                summaryText.style.fontSize = "15px";
+                summaryText.innerHTML = currentSummaryData.detailed;
+            } else if (activeSummaryTab === "bullets") {
+                summaryText.style.fontSize = "15px";
+                const arr = Array.isArray(currentSummaryData.bullets) ? currentSummaryData.bullets : [];
+                summaryText.innerHTML = arr.map(b => `<div class="bullet-line"><span class="bullet-dash">─</span><span>${b}</span></div>`).join("");
+            }
+            summaryText.style.opacity = 1;
+        }, 200);
+    }
+
+    sumTabs.forEach(tab => {
+        tab.addEventListener("click", (e) => {
+            sumTabs.forEach(t => t.classList.remove("active"));
+            e.target.classList.add("active");
+            activeSummaryTab = e.target.dataset.tab;
+            renderSummaryText();
+        });
+    });
+
+    copySummaryBtn.addEventListener("click", () => {
+        if(!currentSummaryData) return;
+        let textToCopy = "";
+        if(activeSummaryTab === "bullets") {
+            const arr = Array.isArray(currentSummaryData.bullets) ? currentSummaryData.bullets : [];
+            textToCopy = arr.map(b => "─ " + b).join("\n");
+        } else {
+            textToCopy = currentSummaryData[activeSummaryTab];
+        }
+        navigator.clipboard.writeText(textToCopy);
+        
+        copySummaryBtn.textContent = "[ COPIED ✓ ]";
+        copySummaryBtn.style.color = "var(--gold)";
+        summaryContainer.style.borderTop = "1px solid var(--gold)";
+        
+        setTimeout(() => {
+            copySummaryBtn.textContent = "[ COPY ]";
+            copySummaryBtn.style.color = "var(--ghost)";
+            summaryContainer.style.borderTop = "none";
+        }, 2000);
+    });
+
+    let isSummaryCollapsed = false;
+    colToggle.addEventListener("click", () => {
+        isSummaryCollapsed = !isSummaryCollapsed;
+        if(isSummaryCollapsed) {
+            summaryContentWrapper.style.maxHeight = "120px";
+            colToggle.textContent = "[ ↓ EXPAND ]";
+            // force brief tab to be active
+            document.querySelector('.sum-tab[data-tab="brief"]').click();
+        } else {
+            summaryContentWrapper.style.maxHeight = "2000px";
+            colToggle.textContent = "[ ↑ COLLAPSE ]";
+        }
+    });
+
+    function buildIntelligencePanel(data) {
+        // Summary Object
+        currentSummaryData = data.summary || { brief: "", detailed: "", bullets: [] };
+        renderSummaryText();
+
+        // Document Meta
+        const meta = data.document_meta || {};
+        metaTopic.textContent = meta.topic || "Unknown";
+        metaRead.textContent = meta.reading_time || "—";
+        metaComp.textContent = meta.complexity || "—";
+        metaLang.textContent = meta.language || "Unknown";
+
+        // Readability client-side approx
+        let wc = parseInt(data.word_count) || 0;
+        let pScore = Math.max(30, 100 - Math.floor(wc / 20));
+        let filled = Math.round(pScore / 10);
+        metaReadability.innerHTML = `<span class="readability-blocks">${"█".repeat(filled)}</span><span style="color:var(--border)">${"░".repeat(10-filled)}</span> &nbsp;${pScore}/100`;
+
+        // AI Confidence
+        let confStr = "", label = "";
+        if(wc < 100) { confStr = "●●○○○"; label = "LOW"; }
+        else if(wc < 500) { confStr = "●●●○○"; label = "MEDIUM"; }
+        else if(wc < 1000) { confStr = "●●●●○"; label = "HIGH"; }
+        else { confStr = "●●●●●"; label = "VERY HIGH"; }
+        confDots.textContent = confStr; confLabel.textContent = label;
+
+        // Keywords
+        const keys = data.keywords || [];
+        if(keys.length > 0) {
+            keywordGrid.innerHTML = keys.map(k => `<span class="keyword-pill">[${k}]</span>`).join("");
+            document.getElementById("keywords-container").style.display = "block";
+        } else {
+            document.getElementById("keywords-container").style.display = "none";
+        }
+
+        // Timeline
+        const dates = (data.entities && data.entities.dates) ? data.entities.dates : [];
+        if(dates.length >= 2) {
+            timelineTrack.innerHTML = dates.slice(0, 4).map(d => `
+                <div class="tl-node">
+                    <div class="tl-date">${d}</div>
+                    <div class="tl-dot"></div>
+                    <div class="tl-event">Detected</div>
+                </div>
+            `).join("");
+            timelineContainer.style.display = "block";
+        } else {
+            timelineContainer.style.display = "none";
+        }
+    }
+
     // API Integration
     analyzeBtn.addEventListener("click", async () => {
         if (!selectedFile) return;
@@ -305,7 +441,7 @@
             const timeTaken = ((endTime - startTime) / 1000).toFixed(1);
 
             // Populate Results
-            resultSummary.textContent = data.summary;
+            buildIntelligencePanel(data);
             
             buildEntitiesTable(data.entities);
 

@@ -18,7 +18,18 @@ MODEL = "llama-3.3-70b-versatile"
 ANALYSIS_PROMPT = """You are a professional document analyst. Analyze the following document text and return a JSON response with exactly this structure:
 
 {{
-  "summary": "A comprehensive 3-5 sentence summary of the document's main content, key points, and purpose.",
+  "summary": {{
+    "brief": "A 2-3 sentence TL;DR version of the summary.",
+    "detailed": "A comprehensive full paragraph summary of the document's main content.",
+    "bullets": ["Key point 1", "Key point 2", "Key point 3", "Key point 4", "Key point 5"]
+  }},
+  "document_meta": {{
+    "topic": "The primary topic (e.g. Finance, Technology, Recipe)",
+    "reading_time": "Estimated reading time (e.g. ~2 min)",
+    "complexity": "Basic | Intermediate | Advanced",
+    "language": "Language of the document (e.g. English)"
+  }},
+  "keywords": ["top", "8", "most", "important", "keywords", "or", "key", "phrases"],
   "entities": {{
     "persons": ["list of person names mentioned"],
     "organizations": ["list of organization/company names mentioned"],
@@ -27,7 +38,7 @@ ANALYSIS_PROMPT = """You are a professional document analyst. Analyze the follow
     "monetary_amounts": ["list of monetary values, prices, costs mentioned"]
   }},
   "sentiment": "positive | negative | neutral",
-  "sentiment_explanation": "A 1-2 sentence explanation of why the document has this sentiment, referencing specific language or tone."
+  "sentiment_explanation": "A 1-2 sentence explanation of why the document has this sentiment."
 }}
 
 Rules:
@@ -67,9 +78,35 @@ def _clean_json_response(response_text: str) -> str:
 
 def _validate_analysis(data: dict) -> dict:
     """Validate and normalize the analysis response structure."""
-    # Ensure all required keys exist with correct types
+    
+    # Handle summary object
+    raw_summary = data.get("summary", {})
+    if isinstance(raw_summary, str):
+        summary_obj = {"brief": raw_summary, "detailed": raw_summary, "bullets": [raw_summary]}
+    else:
+        summary_obj = {
+            "brief": str(raw_summary.get("brief", "No brief summary available.")),
+            "detailed": str(raw_summary.get("detailed", "No detailed summary available.")),
+            "bullets": raw_summary.get("bullets", []) if isinstance(raw_summary.get("bullets"), list) else []
+        }
+    
+    # Handle document_meta
+    raw_meta = data.get("document_meta", {})
+    meta_obj = {
+        "topic": str(raw_meta.get("topic", "Unknown")),
+        "reading_time": str(raw_meta.get("reading_time", "~1 min")),
+        "complexity": str(raw_meta.get("complexity", "Basic")),
+        "language": str(raw_meta.get("language", "Unknown"))
+    }
+    
+    # Handle keywords
+    keywords = data.get("keywords", [])
+    keywords_list = [str(k) for k in keywords] if isinstance(keywords, list) else []
+
     result = {
-        "summary": str(data.get("summary", "No summary available.")),
+        "summary": summary_obj,
+        "document_meta": meta_obj,
+        "keywords": keywords_list,
         "entities": {},
         "sentiment": "neutral",
         "sentiment_explanation": str(
