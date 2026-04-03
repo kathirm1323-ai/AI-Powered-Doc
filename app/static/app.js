@@ -42,7 +42,6 @@
     const statFormat = $("#stat-format");
     const statTime   = $("#stat-time");
 
-    const copyBtn = $("#copy-btn");
     const newBtn  = $("#new-btn");
 
     let selectedFile = null;
@@ -104,15 +103,20 @@
 
     canvasCard.addEventListener("dragover", (e) => {
         e.preventDefault();
-        if(!selectedFile) canvasCard.classList.add("drag-over");
+        if(!selectedFile) {
+            canvasCard.classList.add("drag-over");
+            if (typeof setDragPhysics === 'function') setDragPhysics(true);
+        }
     });
     canvasCard.addEventListener("dragleave", (e) => {
         e.preventDefault();
         canvasCard.classList.remove("drag-over");
+        if (typeof setDragPhysics === 'function') setDragPhysics(false);
     });
     canvasCard.addEventListener("drop", (e) => {
         e.preventDefault();
         canvasCard.classList.remove("drag-over");
+        if (typeof setDragPhysics === 'function') setDragPhysics(false);
         if (e.dataTransfer.files.length && !selectedFile) handleFile(e.dataTransfer.files[0]);
     });
 
@@ -334,13 +338,68 @@
         }
     });
 
-    copyBtn.addEventListener("click", () => {
-        if(latestJsonResponse) {
-            navigator.clipboard.writeText(JSON.stringify(latestJsonResponse, null, 2));
-            const oldText = copyBtn.textContent;
-            copyBtn.textContent = "COPIED";
-            setTimeout(() => copyBtn.textContent = oldText, 2000);
+    // ── Three.js 3D Engine ─────────────────────────────────────
+    const canvas = document.getElementById('three-canvas');
+    if (canvas && typeof THREE !== 'undefined') {
+        const scene = new THREE.Scene();
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        const geometry = new THREE.IcosahedronGeometry(3, 1);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0xc9a84c, 
+            wireframe: true, 
+            transparent: true, 
+            opacity: 0.12 
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetRotationX = 0;
+        let targetRotationY = 0;
+        let windowHalfX = window.innerWidth / 2;
+        let windowHalfY = window.innerHeight / 2;
+
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX - windowHalfX) * 0.001;
+            mouseY = (event.clientY - windowHalfY) * 0.001;
+        });
+
+        let baseRotationSpeed = 0.001;
+        function animate3D() {
+            requestAnimationFrame(animate3D);
+            targetRotationX = mouseY * 0.5;
+            targetRotationY = mouseX * 0.5;
+            mesh.rotation.y += baseRotationSpeed + (targetRotationY - mesh.rotation.y) * 0.05;
+            mesh.rotation.x += baseRotationSpeed + (targetRotationX - mesh.rotation.x) * 0.05;
+            renderer.render(scene, camera);
         }
-    });
+        animate3D();
+
+        window.addEventListener('resize', () => {
+            windowHalfX = window.innerWidth / 2;
+            windowHalfY = window.innerHeight / 2;
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        window.setDragPhysics = function(isDragging) {
+            if(isDragging) {
+                material.opacity = 0.4;
+                baseRotationSpeed = 0.03;
+            } else {
+                material.opacity = 0.12;
+                baseRotationSpeed = 0.001;
+            }
+        };
+    }
 
 })();
