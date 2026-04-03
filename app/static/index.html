@@ -3,253 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DocMind AI | Enterprise Document Intelligence</title>
-    <meta name="description" content="State-of-the-art document analysis powered by Groq LPU and Llama 3. Get instant summaries, entity mapping, and sentiment classification.">
+    <title>DOCMIND AI</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
 </head>
 <body>
-    <!-- Background Effects -->
-    <div class="bg-mesh">
-        <div class="glow-orb orb-primary"></div>
-        <div class="glow-orb orb-secondary"></div>
-    </div>
-    <div class="noise-overlay"></div>
+    <div class="dot-grid"></div>
 
-    <!-- Minimalist macOS style Dock / Navbar -->
-    <nav class="dock" id="navbar">
-        <div class="dock-item brand">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="brand-icon">
-                <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-            </svg>
-            <span class="brand-logotype">DocMind</span>
+    <nav class="navbar">
+        <div class="nav-left">
+            <span class="logo">DOCMIND<sup class="logo-sup">AI</sup></span>
         </div>
-        <div class="dock-divider"></div>
-        <div class="dock-item status">
-            <div class="status-indicator"></div>
-            <span>Operational</span>
+        <div class="nav-center">
+            <span class="pill">GROQ LLAMA 3</span>
+            <span class="pill">PDF · DOCX · IMG</span>
+            <span class="pill live-indicator"><span class="pulse-dot"></span>LIVE</span>
+        </div>
+        <div class="nav-right">
+            <span class="badge">v2.0</span>
         </div>
     </nav>
 
-    <main class="container">
-        
-        <!-- SECTION 1: Hero -->
-        <section class="view hero-view" id="hero-section">
-            <div class="hero-content">
-                <div class="pill-badge">
-                    <span class="pill-dot"></span>
-                    Powered by Llama 3.3 &bull; Groq LPU™
+    <main class="layout">
+        <!-- Centerpiece Canvas -->
+        <section class="canvas-container" id="canvas-card">
+            <div class="scanlines"></div>
+            <div class="top-sweep"></div>
+
+            <!-- Upload State -->
+            <div id="view-upload" class="view-state">
+                <div class="canvas-tag">[UPLOAD]</div>
+                <div class="upload-content" id="upload-zone">
+                    <div class="big-icon" id="drop-icon">∅</div>
+                    <h2 class="upload-title">DROP YOUR DOCUMENT HERE</h2>
+                    <p class="upload-sub">PDF · DOCX · JPG · PNG</p>
                 </div>
-                
-                <h1 class="hero-heading">
-                    Document Intelligence,<br>
-                    <span class="text-shine">Redefined.</span>
-                </h1>
-                
-                <p class="hero-subheading">
-                    Experience state-of-the-art text extraction, sentiment classification, 
-                    and entity mapping in under a second. Drop a file below to begin.
-                </p>
+                <input type="file" id="file-input" accept=".pdf,.docx,.doc,.png,.jpg,.jpeg,.webp,.bmp,.tiff,.tif" hidden>
             </div>
 
-            <!-- Precision Upload Interface -->
-            <div class="glass-panel upload-panel" id="upload-card">
-                <div class="upload-zone" id="upload-zone">
-                    <div class="upload-visual">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" class="upload-icon">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M17 8l-5-5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M12 3v12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <div class="upload-visual-rings"></div>
+            <!-- Selected State -->
+            <div id="view-selected" class="view-state" style="display: none;">
+                <div class="canvas-tag">[READY]</div>
+                <div class="selected-content">
+                    <div class="file-header">
+                        <span class="file-bracket" id="file-ext">[PDF]</span>
+                        <span class="file-name" id="file-name">document-name.pdf</span>
                     </div>
-                    
-                    <h3 class="upload-title">Drop document to parse</h3>
-                    <p class="upload-subtitle">Browse files or drag & drop</p>
-                    
-                    <div class="supported-formats">
-                        <span class="monotag">.PDF</span>
-                        <span class="monotag">.DOCX</span>
-                        <span class="monotag">.PNG</span>
-                        <span class="monotag">.WEBP</span>
-                    </div>
-                    
-                    <input type="file" id="file-input" accept=".pdf,.docx,.doc,.png,.jpg,.jpeg,.webp,.bmp,.tiff,.tif" hidden>
-                </div>
-
-                <!-- Active File State -->
-                <div class="file-state" id="file-preview" style="display: none;">
-                    <div class="file-card">
-                        <div class="file-icon-box">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
+                    <div class="mono-ruler">─────────────────────────────────────────</div>
+                    <div class="file-meta-table">
+                        <div class="meta-col">
+                            <span class="meta-label">SIZE</span>
+                            <span class="meta-val" id="file-size">2.4 MB</span>
                         </div>
-                        <div class="file-details">
-                            <div class="file-name" id="file-name">financial_report_2026.pdf</div>
-                            <div class="file-meta" id="file-meta">PDF DOCUMENT &bull; 2.4 MB</div>
+                        <div class="meta-col">
+                            <span class="meta-label">TYPE</span>
+                            <span class="meta-val" id="file-type">PDF</span>
                         </div>
-                        <button class="icon-btn remove-btn" id="file-remove" aria-label="Remove File">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
+                        <div class="meta-col">
+                            <span class="meta-label">STATUS</span>
+                            <span class="meta-val">READY</span>
+                        </div>
                     </div>
-                    
-                    <button class="primary-btn" id="analyze-btn">
-                        <span>Initialize Analysis</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="arrow-icon">
-                            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </button>
+                    <div class="mono-ruler">─────────────────────────────────────────</div>
+                    <button class="action-btn" id="analyze-btn">ANALYZE</button>
                 </div>
             </div>
 
-            <!-- Features Grid -->
-            <div class="feature-layout">
-                <div class="feature-item">
-                    <div class="feat-icon">⚡</div>
-                    <h4>Groq Inference</h4>
-                    <p>Leveraging Llama 3 via Groq LPU™ for ultra-low latency language processing.</p>
-                </div>
-                <div class="feature-item">
-                    <div class="feat-icon">🎯</div>
-                    <h4>Deep Extraction</h4>
-                    <p>Granular entity recognition mapping people, organizations, dates, and capital.</p>
-                </div>
-                <div class="feature-item">
-                    <div class="feat-icon">🧠</div>
-                    <h4>Sentiment Parsing</h4>
-                    <p>Contextual sentiment algorithms that decode the underlying emotional tone.</p>
+            <!-- Processing State -->
+            <div id="view-processing" class="view-state" style="display: none;">
+                <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
+                <div class="canvas-tag">[PROCESSING]</div>
+                <div class="terminal-container" id="terminal-output">
+                    <!-- Dynamic terminal lines injected via JS -->
                 </div>
             </div>
         </section>
 
-        <!-- SECTION 2: Processing Matrix -->
-        <section class="view processing-view" id="processing-section" style="display: none;">
-            <div class="processing-container">
-                <div class="loader-visual">
-                    <div class="loader-circle circle-1"></div>
-                    <div class="loader-circle circle-2"></div>
-                    <div class="loader-core"></div>
-                </div>
-                
-                <h2 class="processing-heading">Processing Payload</h2>
-                <div class="terminal-box">
-                    <div class="terminal-line active" id="processing-status">&gt; Initiating extraction protocols...</div>
-                </div>
-                
-                <div class="progress-bar-container">
-                    <div class="progress-bar-fill" id="progress-fill"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECTION 3: Results Dashboard (Bento Grid) -->
-        <section class="view results-view" id="results-section" style="display: none;">
-            <header class="results-header">
-                <div>
-                    <div class="pill-badge pulse-badge">Analysis Complete</div>
-                    <h2 class="results-doc-title" id="results-filename">document.pdf</h2>
-                </div>
-                <button class="secondary-btn" id="new-analysis-btn">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                    </svg>
-                    New Upload
-                </button>
-            </header>
-
-            <!-- Metrics Bar -->
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <span class="metric-label">Word Count</span>
-                    <span class="metric-value" id="stat-words">-</span>
-                </div>
-                <div class="metric-card">
-                    <span class="metric-label">Characters</span>
-                    <span class="metric-value" id="stat-chars">-</span>
-                </div>
-                <div class="metric-card">
-                    <span class="metric-label">File Format</span>
-                    <span class="metric-value" id="stat-type">-</span>
-                </div>
-                <div class="metric-card">
-                    <span class="metric-label">Global Tone</span>
-                    <span class="metric-value gradient-value" id="stat-sentiment">-</span>
-                </div>
-            </div>
-
-            <!-- Bento Dashboard -->
-            <div class="bento-grid">
-                
-                <!-- Executive Summary -->
-                <div class="glass-panel bento-card card-summary">
-                    <div class="bento-header">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="bento-icon">
-                            <path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                        </svg>
-                        <h3>Executive Summary</h3>
+        <!-- Payoff Results -->
+        <section class="results-dashboard" id="view-results" style="display: none;">
+            <div class="results-layout">
+                <!-- Left Column -->
+                <div class="col-left">
+                    <div class="results-block summary-block">
+                        <h3 class="category-header">SUMMARY</h3>
+                        <p class="summary-text" id="result-summary"></p>
                     </div>
-                    <div class="bento-content text-content" id="result-summary">
-                        Parsing results...
+
+                    <div class="results-block entities-block">
+                        <h3 class="category-header">ENTITIES DETECTED</h3>
+                        <div class="entities-table" id="entities-grid">
+                            <!-- Dynamically generated -->
+                        </div>
                     </div>
                 </div>
 
-                <!-- Sentiment Context -->
-                <div class="glass-panel bento-card card-sentiment">
-                    <div class="bento-header">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="bento-icon">
-                            <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" stroke="currentColor" stroke-width="1.5"/>
-                            <path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        <h3>Sentiment Context</h3>
+                <!-- Right Column -->
+                <div class="col-right">
+                    <div class="results-block sentiment-block" id="sentiment-block" data-sentiment="neutral">
+                        <div class="sentiment-word" id="sentiment-word">NEUTRAL</div>
+                        <div class="sentiment-bar-track">
+                            <div class="sentiment-bar-fill" id="sentiment-fill"></div>
+                        </div>
+                        <p class="sentiment-desc" id="sentiment-desc"></p>
                     </div>
-                    <div class="bento-content">
-                        <div class="sentiment-tag" id="sentiment-badge">Neutral</div>
-                        <p class="text-content mt-4" id="result-sentiment-explanation">
-                            Awaiting context engine...
-                        </p>
+
+                    <div class="results-block stats-block">
+                        <div class="stat-row">
+                            <span class="stat-label">WORDS</span>
+                            <span class="stat-line"></span>
+                            <span class="stat-number" id="stat-words" data-target="0">0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">CHARACTERS</span>
+                            <span class="stat-line"></span>
+                            <span class="stat-number" id="stat-chars" data-target="0">0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">FORMAT</span>
+                            <span class="stat-line"></span>
+                            <span class="stat-number format-val" id="stat-format">PDF</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">ANALYZED</span>
+                            <span class="stat-line"></span>
+                            <span class="stat-number" id="stat-time">0.0s</span>
+                        </div>
+                    </div>
+
+                    <div class="action-row">
+                        <button class="outline-btn" id="copy-btn">COPY JSON</button>
+                        <button class="outline-btn" id="new-btn">NEW DOCUMENT</button>
                     </div>
                 </div>
-
-                <!-- Semantic Entities -->
-                <div class="glass-panel bento-card card-entities">
-                    <div class="bento-header">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="bento-icon">
-                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" stroke="currentColor" stroke-width="1.5"/>
-                            <path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12" stroke="currentColor" stroke-width="1.5"/>
-                        </svg>
-                        <h3>Extracted Entities</h3>
-                    </div>
-                    <div class="bento-content entity-view" id="entities-grid">
-                        <!-- Populated dynamically -->
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- SECTION 4: Error State -->
-        <section class="view error-view" id="error-section" style="display: none;">
-            <div class="glass-panel error-panel">
-                <div class="error-visual">!</div>
-                <h2 class="error-heading">Exception Caught</h2>
-                <div class="terminal-box error-terminal">
-                    <div class="terminal-line" id="error-message">Connection context timed out.</div>
-                </div>
-                <button class="secondary-btn" id="retry-btn">Re-initialize Upload</button>
             </div>
         </section>
     </main>
 
-    <footer class="app-footer">
-        <p>&copy; 2026 DocMind Systems &bull; Enterprise Class Document Intelligence</p>
+    <footer class="footer">
+        DOCMIND AI &nbsp;·&nbsp; POWERED BY GROQ LLAMA 3 &nbsp;·&nbsp; 2026
     </footer>
 
     <script src="/static/app.js"></script>

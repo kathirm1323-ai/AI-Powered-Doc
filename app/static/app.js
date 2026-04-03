@@ -1,50 +1,54 @@
 /**
- * DocMind AI — Frontend Application Logic
- * Handles file upload, API communication, and results rendering.
+ * DocMind AI — Obsidian Intelligence App Logic
  */
 
 (() => {
     "use strict";
 
-    // ── Configuration ──────────────────────────────────────────
     const API_BASE = window.location.origin;
 
-    // ── DOM References ─────────────────────────────────────────
+    // DOM Elements
     const $ = (sel) => document.querySelector(sel);
-    const heroSection     = $("#hero-section");
-    const uploadZone      = $("#upload-zone");
-    const fileInput       = $("#file-input");
-    const filePreview     = $("#file-preview");
-    const fileName        = $("#file-name");
-    const fileMeta        = $("#file-meta");
-    const fileIconWrapper = $("#file-icon-wrapper");
-    const fileRemove      = $("#file-remove");
-    const analyzeBtn      = $("#analyze-btn");
-    const processingSection   = $("#processing-section");
-    const processingStatus    = $("#processing-status");
-    const progressFill        = $("#progress-fill");
-    const resultsSection      = $("#results-section");
-    const resultsFilename     = $("#results-filename");
-    const errorSection        = $("#error-section");
-    const errorMessage        = $("#error-message");
-    const retryBtn            = $("#retry-btn");
-    const newAnalysisBtn      = $("#new-analysis-btn");
+    const canvasCard    = $("#canvas-card");
+    const viewUpload    = $("#view-upload");
+    const viewSelected  = $("#view-selected");
+    const viewProcessing= $("#view-processing");
+    const viewResults   = $("#view-results");
 
-    // Stats
-    const statWords     = $("#stat-words");
-    const statChars     = $("#stat-chars");
-    const statType      = $("#stat-type");
-    const statSentiment = $("#stat-sentiment");
+    const uploadZone    = $("#upload-zone");
+    const fileInput     = $("#file-input");
+    
+    // File Selected State Elements
+    const fileExt       = $("#file-ext");
+    const fileName      = $("#file-name");
+    const fileSize      = $("#file-size");
+    const fileType      = $("#file-type");
+    const analyzeBtn    = $("#analyze-btn");
 
-    // Results content
-    const resultSummary             = $("#result-summary");
-    const sentimentBadge            = $("#sentiment-badge");
-    const resultSentimentExplanation = $("#result-sentiment-explanation");
-    const entitiesGrid              = $("#entities-grid");
+    // Processing State Elements
+    const terminalOutput = $("#terminal-output");
+    const progressBar    = $("#progress-bar");
+
+    // Results Elements
+    const resultSummary   = $("#result-summary");
+    const entitiesGrid    = $("#entities-grid");
+    const sentimentBlock  = $("#sentiment-block");
+    const sentimentWord   = $("#sentiment-word");
+    const sentimentFill   = $("#sentiment-fill");
+    const sentimentDesc   = $("#sentiment-desc");
+
+    const statWords  = $("#stat-words");
+    const statChars  = $("#stat-chars");
+    const statFormat = $("#stat-format");
+    const statTime   = $("#stat-time");
+
+    const copyBtn = $("#copy-btn");
+    const newBtn  = $("#new-btn");
 
     let selectedFile = null;
+    let latestJsonResponse = null;
 
-    // ── Utilities ──────────────────────────────────────────────
+    // Utilities
     function formatFileSize(bytes) {
         if (bytes < 1024) return bytes + " B";
         if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
@@ -55,185 +59,219 @@
         return name.split(".").pop().toLowerCase();
     }
 
-    function getFileTypeLabel(ext) {
-        const map = {
-            pdf: "PDF", docx: "DOCX", doc: "DOC",
-            png: "PNG", jpg: "JPG", jpeg: "JPEG",
-            webp: "WebP", bmp: "BMP", tiff: "TIFF", tif: "TIFF",
-        };
-        return map[ext] || ext.toUpperCase();
-    }
-
-    function getFileTypeClass(ext) {
-        if (ext === "pdf") return "pdf";
-        if (ext === "docx" || ext === "doc") return "docx";
-        return "image";
-    }
-
-    function formatNumber(n) {
-        return n.toLocaleString("en-US");
-    }
-
     function sleep(ms) {
         return new Promise((r) => setTimeout(r, ms));
     }
 
-    // ── Section Management ─────────────────────────────────────
-    function showSection(section) {
-        [heroSection, processingSection, resultsSection, errorSection].forEach(
-            (s) => (s.style.display = "none")
-        );
-        section.style.display = "";
-        window.scrollTo({ top: 0, behavior: "smooth" });
+    // View Switching
+    function setCanvasView(viewId) {
+        [viewUpload, viewSelected, viewProcessing].forEach(v => v.style.display = "none");
+        $(viewId).style.display = "flex";
     }
 
-    function resetUpload() {
+    function resetApp() {
         selectedFile = null;
         fileInput.value = "";
-        uploadZone.style.display = "";
-        filePreview.style.display = "none";
-        fileIconWrapper.className = "file-icon-wrapper";
+        canvasCard.classList.remove("is-selected");
+        setCanvasView("#view-upload");
+        viewResults.classList.remove("visible");
+        setTimeout(() => viewResults.style.display = "none", 500);
+        terminalOutput.innerHTML = "";
+        progressBar.style.width = "0%";
+        sentimentFill.style.width = "0%";
     }
 
-    // ── File Selection ─────────────────────────────────────────
-    function handleFileSelect(file) {
+    // File Selection Logic
+    function handleFile(file) {
         if (!file) return;
         selectedFile = file;
-
-        const ext = getFileExtension(file.name);
-
+        const ext = getFileExtension(file.name).toUpperCase();
+        
+        fileExt.textContent = `[${ext}]`;
         fileName.textContent = file.name;
-        fileMeta.textContent = `${getFileTypeLabel(ext)} • ${formatFileSize(file.size)}`;
-        fileIconWrapper.className = `file-icon-wrapper ${getFileTypeClass(ext)}`;
+        fileSize.textContent = formatFileSize(file.size);
+        fileType.textContent = ext;
 
-        uploadZone.style.display = "none";
-        filePreview.style.display = "";
+        canvasCard.classList.add("is-selected");
+        setCanvasView("#view-selected");
     }
 
-    // ── Drag & Drop ────────────────────────────────────────────
+    // Event Listeners (Drag/Drop)
     uploadZone.addEventListener("click", () => fileInput.click());
-
     fileInput.addEventListener("change", (e) => {
-        if (e.target.files.length) handleFileSelect(e.target.files[0]);
+        if (e.target.files.length) handleFile(e.target.files[0]);
     });
 
-    uploadZone.addEventListener("dragover", (e) => {
+    canvasCard.addEventListener("dragover", (e) => {
         e.preventDefault();
-        uploadZone.classList.add("drag-over");
+        if(!selectedFile) canvasCard.classList.add("drag-over");
     });
-
-    uploadZone.addEventListener("dragleave", (e) => {
+    canvasCard.addEventListener("dragleave", (e) => {
         e.preventDefault();
-        uploadZone.classList.remove("drag-over");
+        canvasCard.classList.remove("drag-over");
     });
-
-    uploadZone.addEventListener("drop", (e) => {
+    canvasCard.addEventListener("drop", (e) => {
         e.preventDefault();
-        uploadZone.classList.remove("drag-over");
-        if (e.dataTransfer.files.length) handleFileSelect(e.dataTransfer.files[0]);
+        canvasCard.classList.remove("drag-over");
+        if (e.dataTransfer.files.length && !selectedFile) handleFile(e.dataTransfer.files[0]);
     });
 
-    fileRemove.addEventListener("click", resetUpload);
+    newBtn.addEventListener("click", resetApp);
 
-    // ── Processing Animation ───────────────────────────────────
-    async function animateProcessing() {
+    // Terminal Animation Logic
+    async function runTerminalSequence() {
         const steps = [
-            { msg: "> Initiating extraction protocols...", progress: 20 },
-            { msg: "> Decrypting semantic structure...", progress: 45 },
-            { msg: "> Mapping named entities...", progress: 75 },
-            { msg: "> Finalizing algorithmic analysis...", progress: 90 },
+            { text: "> Initializing document parser...", status: "✓", delay: 600 },
+            { text: "> Extracting raw text layer...", status: "✓", delay: 800 },
+            { text: "> Tokenizing content...", status: "[▓▓▓▓▓░░░░░]", delay: 700 },
+            { text: "> Running entity recognition...", status: "—", delay: 900 },
+            { text: "> Sentiment analysis...", status: "—", delay: 800 },
+            { text: "> Generating summary...", status: "—", delay: 600 }
         ];
 
-        for (const step of steps) {
-            processingStatus.textContent = step.msg;
-            progressFill.style.width = step.progress + "%";
-            await sleep(700);
-        }
-    }
+        terminalOutput.innerHTML = "";
+        progressBar.style.width = "5%";
 
-    function resetProcessingSteps() {
-        processingStatus.textContent = "> Ready.";
-        progressFill.style.width = "0%";
-    }
-
-    // ── Entity Rendering ───────────────────────────────────────
-    const entityLabels = {
-        persons: "👤 People",
-        organizations: "🏢 Organizations",
-        locations: "📍 Locations",
-        dates: "📅 Dates",
-        monetary_amounts: "💰 Amounts",
-    };
-
-    function renderEntities(entities) {
-        entitiesGrid.innerHTML = "";
-
-        for (const [key, label] of Object.entries(entityLabels)) {
-            const items = entities[key] || [];
-            const group = document.createElement("div");
-            group.className = `entity-group ${key}`;
-
-            const title = document.createElement("div");
-            title.className = "entity-group-title";
-            title.innerHTML = `${label} <span class="entity-count">${items.length}</span>`;
-            group.appendChild(title);
-
-            if (items.length > 0) {
-                const tagsDiv = document.createElement("div");
-                tagsDiv.className = "entity-tags";
-                items.forEach((item) => {
-                    const tag = document.createElement("span");
-                    tag.className = "entity-tag";
-                    tag.textContent = item;
-                    tagsDiv.appendChild(tag);
-                });
-                group.appendChild(tagsDiv);
-            } else {
-                const empty = document.createElement("p");
-                empty.className = "entity-empty";
-                empty.textContent = "None found";
-                group.appendChild(empty);
+        let currentLine = null;
+        for (let i = 0; i < steps.length; i++) {
+            const step = steps[i];
+            
+            // Remove cursor from previous line
+            if (currentLine) {
+                const prevCursor = currentLine.querySelector('.term-cursor');
+                if(prevCursor) prevCursor.remove();
+                // If it was the tokenizing step, complete it visually
+                if (steps[i-1].status.includes("▓")) {
+                    currentLine.querySelector('.term-status').innerHTML = `<span class="term-check">✓</span>`;
+                }
             }
 
-            entitiesGrid.appendChild(group);
+            // Calculate overall progress
+            progressBar.style.width = ((i+1) / steps.length * 90) + "%";
+
+            currentLine = document.createElement("div");
+            currentLine.className = "term-line";
+            
+            const textSpan = document.createElement("span");
+            textSpan.className = "term-text";
+            textSpan.innerHTML = `${step.text} <span class="term-cursor"></span>`;
+            
+            const statusSpan = document.createElement("span");
+            statusSpan.className = "term-status";
+            statusSpan.innerHTML = step.status === "✓" ? `<span class="term-check">✓</span>` : step.status;
+
+            currentLine.appendChild(textSpan);
+            currentLine.appendChild(statusSpan);
+            terminalOutput.appendChild(currentLine);
+
+            await sleep(step.delay);
+        }
+
+        // Finish up
+        if(currentLine) {
+            const finalCursor = currentLine.querySelector('.term-cursor');
+            if(finalCursor) finalCursor.remove();
+            
+            // Turn all dashes to checks at the very end
+            const allStatuses = terminalOutput.querySelectorAll('.term-status');
+            allStatuses.forEach(s => s.innerHTML = `<span class="term-check">✓</span>`);
+        }
+        
+        progressBar.style.width = "100%";
+        await sleep(400);
+    }
+
+    // Number Counting Animation
+    function animateNumber(el, target, duration = 1000) {
+        const start = 0;
+        const startTime = performance.now();
+        
+        function update(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            // easeOutExpo
+            const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+            
+            const current = Math.floor(start + (target - start) * ease);
+            el.textContent = current.toLocaleString('en-US');
+            
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            } else {
+                el.textContent = target.toLocaleString('en-US');
+            }
+        }
+        requestAnimationFrame(update);
+    }
+
+    // Generate Entities HTML
+    function buildEntitiesTable(entities) {
+        const map = {
+            persons: "PERSONS",
+            organizations: "ORGS",
+            locations: "LOCATIONS",
+            dates: "DATES",
+            monetary_amounts: "AMOUNTS"
+        };
+
+        entitiesGrid.innerHTML = "";
+        let pillIndex = 0;
+
+        for (const [key, label] of Object.entries(map)) {
+            const items = entities[key] || [];
+            
+            const row = document.createElement("div");
+            row.className = "entity-row";
+            
+            const type = document.createElement("span");
+            type.className = "ent-type";
+            type.textContent = label;
+            
+            const line = document.createElement("div");
+            line.className = "ent-line";
+            
+            const list = document.createElement("div");
+            list.className = "ent-list";
+
+            if (items.length > 0) {
+                items.forEach((item) => {
+                    const tag = document.createElement("span");
+                    tag.className = "ent-pill";
+                    tag.textContent = item;
+                    list.appendChild(tag);
+                    
+                    // Stagger animation
+                    setTimeout(() => {
+                        tag.classList.add("visible");
+                    }, ~~(800 + (pillIndex * 50)));
+                    pillIndex++;
+                });
+            } else {
+                const empty = document.createElement("span");
+                empty.className = "ent-pill visible";
+                empty.style.color = "var(--ghost)";
+                empty.style.borderColor = "transparent";
+                empty.textContent = "—";
+                list.appendChild(empty);
+            }
+
+            row.appendChild(type);
+            row.appendChild(line);
+            row.appendChild(list);
+            entitiesGrid.appendChild(row);
         }
     }
 
-    // ── Results Rendering ──────────────────────────────────────
-    function renderResults(data) {
-        resultsFilename.textContent = data.filename;
-
-        // Stats
-        statWords.textContent = formatNumber(data.word_count);
-        statChars.textContent = formatNumber(data.char_count);
-        statType.textContent = data.file_type;
-        statSentiment.textContent =
-            data.sentiment.charAt(0).toUpperCase() + data.sentiment.slice(1);
-
-        // Summary
-        resultSummary.textContent = data.summary;
-
-        // Sentiment
-        sentimentBadge.textContent = data.sentiment;
-        sentimentBadge.className = `sentiment-badge ${data.sentiment}`;
-        resultSentimentExplanation.textContent = data.sentiment_explanation;
-
-        // Entities
-        renderEntities(data.entities);
-
-        showSection(resultsSection);
-    }
-
-    // ── API Call ────────────────────────────────────────────────
-    async function analyzeDocument() {
+    // API Integration
+    analyzeBtn.addEventListener("click", async () => {
         if (!selectedFile) return;
 
-        showSection(processingSection);
-        resetProcessingSteps();
+        setCanvasView("#view-processing");
+        canvasCard.classList.remove("is-selected");
 
-        const animationPromise = animateProcessing();
+        const startTime = Date.now();
+        const animationPromise = runTerminalSequence();
 
-        // Build FormData
         const formData = new FormData();
         formData.append("file", selectedFile);
 
@@ -243,51 +281,60 @@
                 body: formData,
             });
 
-            // Wait for animation to finish
             await animationPromise;
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                const detail = errorData.detail;
-                let msg = "Analysis failed. Please try again.";
-                if (detail) {
-                    msg = typeof detail === "object" ? detail.message || msg : String(detail);
-                }
-                throw new Error(msg);
+                throw new Error("API Exception");
             }
 
             const data = await response.json();
+            latestJsonResponse = data;
+            
+            const endTime = Date.now();
+            const timeTaken = ((endTime - startTime) / 1000).toFixed(1);
 
-            // Complete step
-            progressFill.style.width = "100%";
-            processingStatus.textContent = "> Analysis complete.";
-            await sleep(600);
+            // Populate Results
+            resultSummary.textContent = data.summary;
+            
+            buildEntitiesTable(data.entities);
 
-            renderResults(data);
+            const sent = (data.sentiment || "neutral").toLowerCase();
+            sentimentBlock.setAttribute("data-sentiment", sent);
+            sentimentWord.textContent = sent.toUpperCase();
+            sentimentDesc.textContent = data.sentiment_explanation;
+            
+            statFormat.textContent = data.file_type || getFileExtension(selectedFile.name).toUpperCase();
+            statTime.textContent = timeTaken + "s";
+
+            // Reveal Payoff
+            viewResults.style.display = "block";
+            // trigger reflow
+            void viewResults.offsetWidth;
+            viewResults.classList.add("visible");
+            
+            // Trigger sentiment bar fill
+            setTimeout(() => {
+                sentimentFill.style.width = "100%";
+            }, 500);
+
+            // Trigger number counters
+            animateNumber(statWords, parseInt(data.word_count) || 0);
+            animateNumber(statChars, parseInt(data.char_count) || 0);
+
         } catch (err) {
-            console.error("Analysis error:", err);
-            errorMessage.textContent = err.message || "An unexpected error occurred.";
-            showSection(errorSection);
-        }
-    }
-
-    // ── Event Listeners ────────────────────────────────────────
-    analyzeBtn.addEventListener("click", analyzeDocument);
-
-    retryBtn.addEventListener("click", () => {
-        resetUpload();
-        showSection(heroSection);
-    });
-
-    newAnalysisBtn.addEventListener("click", () => {
-        resetUpload();
-        showSection(heroSection);
-    });
-
-    // Keyboard shortcut: Enter to analyze when file is selected
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && selectedFile && heroSection.style.display !== "none") {
-            analyzeDocument();
+            console.error(err);
+            terminalOutput.innerHTML += `<div class="term-line" style="color:var(--negative)">> EXCEPTION: ${err.message}</div>`;
+            progressBar.style.background = "var(--negative)";
         }
     });
+
+    copyBtn.addEventListener("click", () => {
+        if(latestJsonResponse) {
+            navigator.clipboard.writeText(JSON.stringify(latestJsonResponse, null, 2));
+            const oldText = copyBtn.textContent;
+            copyBtn.textContent = "COPIED";
+            setTimeout(() => copyBtn.textContent = oldText, 2000);
+        }
+    });
+
 })();
