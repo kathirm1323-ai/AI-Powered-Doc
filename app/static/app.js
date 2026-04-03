@@ -341,65 +341,58 @@
 
     // ── Three.js 3D Engine ─────────────────────────────────────
     const canvas = document.getElementById('three-canvas');
-    if (canvas && typeof THREE !== 'undefined') {
+    if (canvas && typeof THREE !== 'undefined' && canvasCard) {
         const scene = new THREE.Scene();
+        let width = canvasCard.clientWidth;
+        let height = canvasCard.clientHeight;
         
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 5;
+        const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+        camera.position.z = 4.5;
+        // Shift camera left so model renders on the right side of the box
+        camera.position.x = -1.5;
 
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setSize(width, height);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        const geometry = new THREE.IcosahedronGeometry(3, 1);
+        const geometry = new THREE.IcosahedronGeometry(3.5, 1);
         const material = new THREE.MeshBasicMaterial({ 
-            color: 0xc9a84c, 
-            wireframe: true, 
-            transparent: true, 
-            opacity: 0.12 
+            color: 0xc9a84c, wireframe: true, transparent: true, opacity: 0.15 
         });
         const mesh = new THREE.Mesh(geometry, material);
         scene.add(mesh);
 
-        let mouseX = 0;
-        let mouseY = 0;
-        let targetRotationX = 0;
-        let targetRotationY = 0;
-        let windowHalfX = window.innerWidth / 2;
-        let windowHalfY = window.innerHeight / 2;
+        let mouseX = 0; let mouseY = 0;
+        let targetRotationX = 0; let targetRotationY = 0;
 
-        document.addEventListener('mousemove', (event) => {
-            mouseX = (event.clientX - windowHalfX) * 0.001;
-            mouseY = (event.clientY - windowHalfY) * 0.001;
+        canvasCard.addEventListener('mousemove', (event) => {
+            const rect = canvasCard.getBoundingClientRect();
+            mouseX = ((event.clientX - rect.left) - (width/2)) * 0.002;
+            mouseY = ((event.clientY - rect.top) - (height/2)) * 0.002;
         });
 
-        let baseRotationSpeed = 0.001;
+        let baseRotationSpeed = 0.0015;
         function animate3D() {
             requestAnimationFrame(animate3D);
-            targetRotationX = mouseY * 0.5;
-            targetRotationY = mouseX * 0.5;
+            targetRotationX = mouseY * 0.5; targetRotationY = mouseX * 0.5;
             mesh.rotation.y += baseRotationSpeed + (targetRotationY - mesh.rotation.y) * 0.05;
             mesh.rotation.x += baseRotationSpeed + (targetRotationX - mesh.rotation.x) * 0.05;
             renderer.render(scene, camera);
         }
         animate3D();
 
-        window.addEventListener('resize', () => {
-            windowHalfX = window.innerWidth / 2;
-            windowHalfY = window.innerHeight / 2;
-            camera.aspect = window.innerWidth / window.innerHeight;
+        const resizeObserver = new ResizeObserver(() => {
+            width = canvasCard.clientWidth;
+            height = canvasCard.clientHeight;
+            camera.aspect = width / height;
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setSize(width, height);
         });
+        resizeObserver.observe(canvasCard);
 
         window.setDragPhysics = function(isDragging) {
-            if(isDragging) {
-                material.opacity = 0.4;
-                baseRotationSpeed = 0.03;
-            } else {
-                material.opacity = 0.12;
-                baseRotationSpeed = 0.001;
-            }
+            if(isDragging) { material.opacity = 0.5; baseRotationSpeed = 0.04; }
+            else { material.opacity = 0.15; baseRotationSpeed = 0.0015; }
         };
     }
 
