@@ -13,7 +13,7 @@ from pathlib import Path
 mimetypes.add_type('text/css', '.css')
 mimetypes.add_type('application/javascript', '.js')
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -55,9 +55,18 @@ MAX_FILE_SIZE = 10 * 1024 * 1024
 
 
 @app.get("/")
-async def root():
+async def root_get():
     """Serve the frontend SPA."""
     return FileResponse(str(STATIC_DIR / "index.html"))
+
+
+@app.post("/")
+async def root_post(
+    file: UploadFile = File(...),
+    x_api_key: str = Header(None)
+):
+    """Alias for /analyze to support some API testers that POST to root."""
+    return await analyze(file, x_api_key)
 
 
 @app.get("/health")
@@ -71,13 +80,16 @@ async def health():
 
 
 @app.post("/analyze")
-async def analyze(file: UploadFile = File(...)):
+async def analyze(
+    file: UploadFile = File(...),
+    x_api_key: str = Header(None)
+):
     """
     Analyze an uploaded document.
-
-    Accepts PDF, DOCX, or image files. Returns AI-generated summary,
-    named entities, sentiment analysis, and document statistics.
     """
+    if x_api_key:
+        logger.info(f"API Key provided in header: {x_api_key[:10]}...")
+
     filename = file.filename or "unknown"
     logger.info(f"Received file: {filename} ({file.content_type})")
 
@@ -88,7 +100,7 @@ async def analyze(file: UploadFile = File(...)):
             detail={
                 "error": "unsupported_file_type",
                 "message": f"File type not supported. Please upload a PDF, DOCX, or image file.",
-                "filename": filename,
+                "fileName": filename,
             },
         )
 
@@ -127,28 +139,26 @@ async def analyze(file: UploadFile = File(...)):
     # Extract text
     try:
         text = extract_text(filename, file_bytes)
-        logger.info(f"Extracted {len(text)} characters from {filename}")
     except ValueError as e:
         raise HTTPException(
             status_code=422,
             detail={
                 "error": "extraction_failed",
                 "message": str(e),
-                "filename": filename,
+                "fileName": filename,
             },
         )
 
     # Run AI analysis
     try:
         analysis = analyze_document(text)
-        logger.info(f"Analysis complete for {filename}")
     except ValueError as e:
         raise HTTPException(
             status_code=500,
             detail={
                 "error": "analysis_failed",
                 "message": str(e),
-                "filename": filename,
+                "fileName": filename,
             },
         )
 
@@ -164,10 +174,12 @@ async def analyze(file: UploadFile = File(...)):
         "entities": analysis["entities"],
         "sentiment": analysis["sentiment"],
         "sentiment_explanation": analysis["sentiment_explanation"],
-        "filename": filename,
+        "fileName": filename,
         "word_count": word_count,
         "char_count": char_count,
         "file_type": get_file_type_label(filename),
     }
+
+    return JSONResponse(content=response)
 
     return JSONResponse(content=response)
