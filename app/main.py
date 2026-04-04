@@ -5,8 +5,13 @@ and serves the frontend SPA.
 """
 
 import logging
+import mimetypes
 import os
 from pathlib import Path
+
+# Fix for MIME type issues in Docker/Render
+mimetypes.add_type('text/css', '.css')
+mimetypes.add_type('application/javascript', '.js')
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
