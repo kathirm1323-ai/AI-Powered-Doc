@@ -102,9 +102,9 @@ async def analyze(request: Request, x_api_key: str = Header(None)):
             form = await request.form()
             logger.info(f"Form keys received: {list(form.keys())}")
             for name, value in form.items():
-                if isinstance(value, UploadFile):
+                if hasattr(value, "filename") and hasattr(value, "file"):
                     actual_file = value
-                    filename = actual_file.filename or "unknown"
+                    filename = getattr(value, "filename", "unknown") or "unknown"
                     logger.info(f"Detected file in form field: '{name}'")
                     break
                 elif isinstance(value, str):
