@@ -13,8 +13,8 @@
     --negative:    #f87171;
     --neutral:     #94a3b8;
     
-    --font-head: 'Space Grotesk', sans-serif;
-    --font-body: 'Inter', sans-serif;
+    --font-head: 'Inter', sans-serif;
+    --font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 }
 
@@ -44,6 +44,24 @@ body {
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--surface); }
+.outline-btn:active { background: var(--border); }
+
+#analyze-btn {
+    border-color: var(--gold);
+    color: var(--gold);
+    box-shadow: inset 0 0 0 transparent, 0 0 0 transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#analyze-btn:hover {
+    background: var(--gold);
+    color: var(--void);
+    box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.4);
+    text-shadow: none;
+    transform: translateY(-2px);
+}
+#analyze-btn:active {
+    transform: translateY(0);
+}
 ::-webkit-scrollbar-thumb { background: var(--border-lit); }
 ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 ::selection { background: var(--gold); color: var(--void); }

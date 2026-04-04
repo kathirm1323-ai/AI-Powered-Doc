@@ -140,15 +140,15 @@
 
     newBtn.addEventListener("click", resetApp);
 
-    // Terminal Animation Logic
+    // Cinematic Terminal Processing Sequence
     async function runTerminalSequence() {
         const steps = [
-            { text: "> Initializing document parser...", status: "✓", delay: 600 },
-            { text: "> Extracting raw text layer...", status: "✓", delay: 800 },
-            { text: "> Tokenizing content...", status: "[▓▓▓▓▓░░░░░]", delay: 700 },
-            { text: "> Running entity recognition...", status: "—", delay: 900 },
-            { text: "> Sentiment analysis...", status: "—", delay: 800 },
-            { text: "> Generating summary...", status: "—", delay: 600 }
+            { text: "> INITIALIZING SECURE NEURAL UPLINK...", status: "✓", delay: 400 },
+            { text: "> 01101101 01100001 01110100 01110010...", status: "✓", delay: 300 },
+            { text: "> BYPASSING FORMAT ENCRYPTION. 100%", status: "[▓▓▓▓▓░░░░░]", delay: 600 },
+            { text: "> EXTRACTING RAW TEXT MATRIX...", status: "—", delay: 800 },
+            { text: "> EXECUTING ENTITY RECOGNITION ALGORITHMS...", status: "—", delay: 700 },
+            { text: "> GENERATING 8-TIER INTELLIGENT SUMMARY...", status: "—", delay: 1100 }
         ];
 
         terminalOutput.innerHTML = "";
@@ -494,7 +494,7 @@
         // Use Octahedron for a geometric "Diamond" shape
         const geometry = new THREE.OctahedronGeometry(4, 0);
         const wireMaterial = new THREE.MeshBasicMaterial({ 
-            color: 0xc9a84c, wireframe: true, transparent: true, opacity: 0.15 
+            color: 0xffd700, wireframe: true, transparent: true, opacity: 0.45 
         });
         const mesh = new THREE.Mesh(geometry, wireMaterial);
         scene.add(mesh);
@@ -528,8 +528,8 @@
         });
 
         window.setDragPhysics = function(isDragging) {
-            if(isDragging) { wireMaterial.opacity = 0.5; baseRotationSpeed = 0.04; }
-            else { wireMaterial.opacity = 0.15; baseRotationSpeed = 0.0015; }
+            if(isDragging) { wireMaterial.opacity = 0.9; baseRotationSpeed = 0.04; }
+            else { wireMaterial.opacity = 0.45; baseRotationSpeed = 0.0015; }
         };
     }
 
