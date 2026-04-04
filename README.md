@@ -11,10 +11,8 @@ DocMind AI is a professional-grade, single-page AI document analysis platform. I
 
 ## 🚀 Live Demo
 
-You can view the live deployment of this application (if hosted on Render) here:
-👉 **[https://ai-powered-doc.onrender.com](https://ai-powered-doc.onrender.com)**
-
-*(Note: If deploying to a different Render service name, replace the URL above).*
+You can view the live deployment of DocMind AI here:
+👉 **[https://ai-powered-doc-oxm0.onrender.com/](https://ai-powered-doc-oxm0.onrender.com/)**
 
 ## 🎨 $100,000 Ultra-Premium UI
 
