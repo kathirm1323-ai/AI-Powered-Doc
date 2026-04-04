@@ -267,6 +267,7 @@ dependencies = [
     { name = "pymupdf" },
     { name = "pytesseract" },
     { name = "python-docx" },
+    { name = "python-dotenv" },
     { name = "python-multipart" },
     { name = "uvicorn", extra = ["standard"] },
 ]
@@ -280,6 +281,7 @@ requires-dist = [
     { name = "pymupdf", specifier = ">=1.24.3" },
     { name = "pytesseract", specifier = ">=0.3.10" },
     { name = "python-docx", specifier = ">=1.1.2" },
+    { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "python-multipart", specifier = ">=0.0.9" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.29.0" },
 ]

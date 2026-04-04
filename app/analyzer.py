@@ -8,6 +8,11 @@ import logging
 import os
 import re
 
+from dotenv import load_dotenv
+
+# Load local environment variables natively
+load_dotenv()
+
 from groq import Groq
 
 logger = logging.getLogger(__name__)
