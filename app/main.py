@@ -62,11 +62,13 @@ async def root_get():
 
 @app.post("/")
 async def root_post(
-    file: UploadFile = File(...),
+    file: UploadFile = File(None),
+    document: UploadFile = File(None),
+    image: UploadFile = File(None),
     x_api_key: str = Header(None)
 ):
     """Alias for /analyze to support some API testers that POST to root."""
-    return await analyze(file, x_api_key)
+    return await analyze(file, document, image, x_api_key)
 
 
 @app.get("/health")
@@ -81,17 +83,36 @@ async def health():
 
 @app.post("/analyze")
 async def analyze(
-    file: UploadFile = File(...),
+    file: UploadFile = File(None),
+    document: UploadFile = File(None),
+    image: UploadFile = File(None),
     x_api_key: str = Header(None)
 ):
     """
     Analyze an uploaded document.
     """
+    # Identify which field was used
+    actual_file = file or document or image
+    
+    if not actual_file:
+        logger.error("No file found in common fields (file, document, image)")
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "missing_file",
+                "message": "No file detected. Please send your document in a field named 'file', 'document', or 'image'.",
+                "fileName": "unknown",
+                "summary": "",
+                "entities": [],
+                "sentiment": ""
+            }
+        )
+
     if x_api_key:
         logger.info(f"API Key provided in header: {x_api_key[:10]}...")
 
-    filename = file.filename or "unknown"
-    logger.info(f"Received file: {filename} ({file.content_type})")
+    filename = actual_file.filename or "unknown"
+    logger.info(f"Received file: {filename} ({actual_file.content_type})")
 
     # Validate file type
     if not is_supported(filename):
@@ -101,12 +122,15 @@ async def analyze(
                 "error": "unsupported_file_type",
                 "message": f"File type not supported. Please upload a PDF, DOCX, or image file.",
                 "fileName": filename,
+                "summary": "Error: Unsupported type",
+                "entities": [],
+                "sentiment": "N/A"
             },
         )
 
     # Read file bytes
     try:
-        file_bytes = await file.read()
+        file_bytes = await actual_file.read()
     except Exception as e:
         logger.error(f"Failed to read file: {e}")
         raise HTTPException(
@@ -114,6 +138,10 @@ async def analyze(
             detail={
                 "error": "file_read_error",
                 "message": "Could not read the uploaded file.",
+                "fileName": filename,
+                "summary": "Error: Read failure",
+                "entities": [],
+                "sentiment": "N/A"
             },
         )
 
@@ -124,6 +152,10 @@ async def analyze(
             detail={
                 "error": "file_too_large",
                 "message": f"File exceeds the 10 MB limit ({len(file_bytes) / 1024 / 1024:.1f} MB).",
+                "fileName": filename,
+                "summary": "Error: Large file",
+                "entities": [],
+                "sentiment": "N/A"
             },
         )
 
@@ -133,6 +165,10 @@ async def analyze(
             detail={
                 "error": "empty_file",
                 "message": "The uploaded file is empty.",
+                "fileName": filename,
+                "summary": "Error: Empty file",
+                "entities": [],
+                "sentiment": "N/A"
             },
         )
 
@@ -146,6 +182,9 @@ async def analyze(
                 "error": "extraction_failed",
                 "message": str(e),
                 "fileName": filename,
+                "summary": "Error: Extraction failed",
+                "entities": [],
+                "sentiment": "N/A"
             },
         )
 
@@ -159,6 +198,9 @@ async def analyze(
                 "error": "analysis_failed",
                 "message": str(e),
                 "fileName": filename,
+                "summary": "Error: AI analysis failed",
+                "entities": [],
+                "sentiment": "N/A"
             },
         )
 
