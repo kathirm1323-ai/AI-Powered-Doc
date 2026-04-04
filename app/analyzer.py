@@ -169,8 +169,9 @@ def analyze_document(text: str) -> dict:
             ],
             model=MODEL,
             temperature=0.3,
-            max_tokens=2048,
+            max_tokens=4096,
             top_p=0.9,
+            response_format={"type": "json_object"},
         )
 
         response_text = chat_completion.choices[0].message.content
