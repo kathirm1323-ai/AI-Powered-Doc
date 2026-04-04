@@ -91,38 +91,49 @@ async def analyze(request: Request, x_api_key: str = Header(None)):
     }
 
     try:
-        # 1. Try to find a file in the form data (Standard Multipart)
         content_type = request.headers.get("content-type", "")
+        logger.info(f"Incoming Request Content-Type: {content_type}")
         
         actual_file = None
         extracted_text = None
         filename = "document.txt"
 
-        if "multipart/form-data" in content_type:
+        if "multipart/form-data" in content_type or "application/x-www-form-urlencoded" in content_type:
             form = await request.form()
+            logger.info(f"Form keys received: {list(form.keys())}")
             for name, value in form.items():
                 if isinstance(value, UploadFile):
                     actual_file = value
                     filename = actual_file.filename or "unknown"
                     logger.info(f"Detected file in form field: '{name}'")
                     break
-                elif name in ["text", "content", "data", "document"]:
-                    extracted_text = str(value)
+                elif isinstance(value, str):
+                    if not extracted_text or name.lower() in ["text", "content", "document", "file", "data", "url"]:
+                        extracted_text = value
                     logger.info(f"Detected raw text in form field: '{name}'")
-
-        # 2. Try to find data in JSON body (REST Evaluation)
+                    
         elif "application/json" in content_type:
             data = await request.json()
-            # Check for base64 or raw text in common keys
-            for key in ["text", "content", "data", "document", "message"]:
-                if key in data and data[key]:
-                    extracted_text = str(data[key])
-                    logger.info(f"Detected text in JSON key: '{key}'")
-                    break
-            if "fileName" in data:
-                filename = data["fileName"]
-            elif "filename" in data:
-                filename = data["filename"]
+            logger.info(f"JSON keys received: {list(data.keys())}")
+            
+            # Auto-detect any large string as our content, or specific keys
+            for key, val in data.items():
+                if key.lower() in ["filename", "file_name", "name"]:
+                    filename = str(val)
+                elif isinstance(val, str):
+                    if not extracted_text or key.lower() in ["text", "content", "data", "document", "file", "url"]:
+                        extracted_text = str(val)
+                    logger.info(f"Detected content in JSON key: '{key}'")
+                    # don't break, keep looking for filename but we have text
+
+        else:
+            # Fallback for plain text or unexpected content types
+            body_bytes = await request.body()
+            if body_bytes:
+                text_body = body_bytes.decode('utf-8', errors='ignore').strip()
+                if text_body:
+                    extracted_text = text_body
+                    logger.info("Detected fallback raw body text.")
 
         # 3. Process the results
         if actual_file:
