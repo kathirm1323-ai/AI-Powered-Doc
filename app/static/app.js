@@ -138,7 +138,10 @@
         if (e.dataTransfer.files.length && !selectedFile) handleFile(e.dataTransfer.files[0]);
     });
 
-    newBtn.addEventListener("click", resetApp);
+    newBtn.addEventListener("click", () => {
+        resetApp();
+        if (typeof window.setResultsMode3D === 'function') window.setResultsMode3D(false);
+    });
 
     // Cinematic Terminal Processing Sequence
     async function runTerminalSequence() {
@@ -460,6 +463,7 @@
             // trigger reflow
             void viewResults.offsetWidth;
             viewResults.classList.add("visible");
+            if (window.setResultsMode3D) window.setResultsMode3D(true);
             
             // Trigger sentiment bar fill
             setTimeout(() => {
@@ -506,15 +510,12 @@
             mouseX = (event.clientX - (width/2)) * 0.001;
             mouseY = (event.clientY - (height/2)) * 0.001;
         });
-
         let baseRotationSpeed = 0.0015;
         function animate3D() {
             requestAnimationFrame(animate3D);
             targetRotationX = mouseY * 0.5; targetRotationY = mouseX * 0.5;
-            
             mesh.rotation.y += baseRotationSpeed + (targetRotationY - mesh.rotation.y) * 0.05;
             mesh.rotation.x += baseRotationSpeed + (targetRotationX - mesh.rotation.x) * 0.05;
-
             renderer.render(scene, camera);
         }
         animate3D();
@@ -530,6 +531,18 @@
         window.setDragPhysics = function(isDragging) {
             if(isDragging) { wireMaterial.opacity = 0.9; baseRotationSpeed = 0.04; }
             else { wireMaterial.opacity = 0.45; baseRotationSpeed = 0.0015; }
+        };
+
+        window.setResultsMode3D = function(inResults) {
+            if(inResults) {
+                wireMaterial.opacity = 0.05;
+                baseRotationSpeed = 0.0002;
+                mesh.scale.set(0.8, 0.8, 0.8);
+            } else {
+                wireMaterial.opacity = 0.45;
+                baseRotationSpeed = 0.0015;
+                mesh.scale.set(1, 1, 1);
+            }
         };
     }
 
